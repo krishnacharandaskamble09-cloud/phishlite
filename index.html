@@ -284,7 +284,7 @@
     <div class="form-wrap">
       <div class="form-row">
         <input type="email" id="emailInput" placeholder="your@email.com" autocomplete="off"/>
-        <button onclick="handleSignup()">Get Early Access →</button>
+        <button id="signupBtn">Get Early Access →</button>
       </div>
       <div class="success-msg" id="successMsg">✓ You're on the list! We'll notify you at launch.</div>
       <p class="form-note">Join <span id="counter">0</span> security enthusiasts waiting for launch. Be first.</p>
@@ -366,7 +366,7 @@
   </div>
 </footer>
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+<script>
   const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwTkDT0XYuQsFsmnE5lX5B85vo1Vdp0OTSBu_gDKe_SESifc7na4hku9EXIsWJ-AAOs/exec";
 
   async function loadCount() {
@@ -420,3 +420,78 @@
     if (e.key === 'Enter') handleSignup();
   });
 l
+<script>
+(function() {
+  var SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwTkDT0XYuQsFsmnE5lX5B85vo1Vdp0OTSBu_gDKe_SESifc7na4hku9EXIsWJ-AAOs/exec";
+
+  function loadCount() {
+    var s = document.createElement('script');
+    window.__pbCount = function(data) {
+      if (data && data.count !== undefined) {
+        document.getElementById('counter').textContent = data.count;
+        document.getElementById('counter2').textContent = data.count;
+      }
+    };
+    s.src = SCRIPT_URL + '?callback=__pbCount';
+    document.body.appendChild(s);
+  }
+
+  function handleSignup() {
+    var emailEl = document.getElementById('emailInput');
+    var email = emailEl.value.trim();
+    if (!email || !email.includes('@')) {
+      emailEl.style.borderColor = '#EF5350';
+      setTimeout(function(){ emailEl.style.borderColor = ''; }, 1500);
+      return;
+    }
+    var btn = document.getElementById('signupBtn');
+    btn.textContent = 'Submitting...';
+    btn.disabled = true;
+
+    var cbName = '__pb_' + Date.now();
+    var s = document.createElement('script');
+
+    window[cbName] = function(data) {
+      delete window[cbName];
+      if (s.parentNode) s.parentNode.removeChild(s);
+      if (data.status === 'success') {
+        document.querySelector('.form-row').style.display = 'none';
+        document.getElementById('successMsg').style.display = 'block';
+        loadCount();
+      } else if (data.status === 'duplicate') {
+        document.getElementById('successMsg').textContent = '⚡ Already on the list!';
+        document.querySelector('.form-row').style.display = 'none';
+        document.getElementById('successMsg').style.display = 'block';
+      } else {
+        btn.textContent = 'Get Early Access →';
+        btn.disabled = false;
+        alert('Error: ' + (data.message || 'Try again'));
+      }
+    };
+
+    s.onerror = function() {
+      delete window[cbName];
+      btn.textContent = 'Get Early Access →';
+      btn.disabled = false;
+      alert('Connection failed. Please try again.');
+    };
+
+    s.src = SCRIPT_URL + '?email=' + encodeURIComponent(email) + '&callback=' + cbName;
+    document.body.appendChild(s);
+  }
+
+  document.addEventListener('DOMContentLoaded', function() {
+    var btn = document.getElementById('signupBtn');
+    if (btn) btn.addEventListener('click', handleSignup);
+
+    var input = document.getElementById('emailInput');
+    if (input) input.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') handleSignup();
+    });
+
+    loadCount();
+  });
+})();
+</script>
+</body>
+</html>
