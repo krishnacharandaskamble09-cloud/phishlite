@@ -379,7 +379,7 @@
       }
     } catch(e) {}
   }
-  if (SCRIPT_URL !== "https://script.google.com/macros/s/AKfycbwTkDT0XYuQsFsmnE5lX5B85vo1Vdp0OTSBu_gDKe_SESifc7na4hku9EXIsWJ-AAOs/exec") loadCount();
+  loadCount();
 
   async function handleSignup() {
     const email = document.getElementById('emailInput').value.trim();
@@ -392,7 +392,9 @@
     btn.textContent = 'Submitting...';
     btn.disabled = true;
     try {
-      const res  = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ email }) });
+      // Use GET + URL params to avoid CORS preflight issues
+      const url  = SCRIPT_URL + "?email=" + encodeURIComponent(email);
+      const res  = await fetch(url, { method: 'GET', mode: 'cors' });
       const data = await res.json();
       if (data.status === 'success') {
         document.querySelector('.form-row').style.display = 'none';
